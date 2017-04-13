@@ -1,0 +1,8 @@
+priv/
+c_src/env.mk
+*.swp
+*.swo
+*.o
+ebin
+*.beam
+marray.d
