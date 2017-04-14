@@ -60,11 +60,15 @@ static ERL_NIF_TERM new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         ret = atom_alloc_error;
         goto error;
     }
+    ret = enif_make_resource(env, resource);
+    enif_release_resource(resource);
     array = (marray *)resource;
     array->size = size;
     array->array = enif_alloc(sizeof(uint16_t) * size);
-    ret = enif_make_resource(env, resource);
-    enif_release_resource(resource);
+    if (!array->array){
+        ret = atom_alloc_error;
+        goto error;
+    }
     return enif_make_tuple2(env, atom_ok, ret);
 error:
     return enif_make_tuple2(env, atom_error, ret);
