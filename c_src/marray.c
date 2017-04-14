@@ -18,7 +18,8 @@ typedef struct marray{
 static void destructor(ErlNifEnv* env, void *obj)
 {
     marray *ptr = (marray *)obj;
-    enif_free(ptr->array);
+    if(ptr->array)
+        enif_free(ptr->array);
 }
 
 
