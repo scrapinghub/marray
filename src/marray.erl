@@ -8,23 +8,23 @@
 
 
 -define(MIN, 0).
--define(MAX, 65535).
+-define(MAX, 4294967295).
 
--type uint16() :: 0..65535.
+-type uint32() :: 0..4294967295.
 
 
 -spec new(List) -> Result when
-      List    :: [uint16()],
+      List    :: [uint32()],
       Result  :: {ok, term()}
                | {error, overflow}
                | {error, {bad_element, Pos, Element}}
                | {error, {index_out_of_range, Pos, Count}},
-      Pos     :: uint16(),
+      Pos     :: uint32(),
       Element :: non_neg_integer(),
       Count   :: non_neg_integer().
 new(List) ->
     Len = length(List),
-    case (length(List) =< ?MAX + 1) of
+    case (Len =< ?MAX) of
         true ->
             {ok, Array} = marray_nif:new(Len),
             FoldFun = fun(Element, Pos) ->
@@ -44,8 +44,8 @@ new(List) ->
 
 
 -spec set(Pos, Value, Arr) -> Result when
-      Pos    :: uint16(),
-      Value  :: uint16(),
+      Pos    :: uint32(),
+      Value  :: uint32(),
       Arr    :: term(),
       Result :: ok
               | {error, index_out_of_range}.
@@ -66,9 +66,9 @@ set(Pos, Value, _Arr) ->
 
 
 -spec get(Pos, Arr) -> Result when
-      Pos    :: uint16(),
+      Pos    :: uint32(),
       Arr    :: term(),
-      Result :: {ok, uint16()}
+      Result :: {ok, uint32()}
               | {error, {index_out_of_range, Pos, Count}},
       Pos    :: non_neg_integer(),
       Count  :: non_neg_integer().
@@ -82,14 +82,14 @@ get(Pos, Arr) ->
 
 -spec count(Arr) -> Result when
       Arr    :: term(),
-      Result :: uint16().
+      Result :: uint32().
 count(Arr) ->
     marray_nif:count(Arr).
 
 
 -spec to_list(Arr) -> List when
       Arr  :: term(),
-      List :: [uint16()].
+      List :: [uint32()].
 to_list(Arr) ->
     Count = count(Arr),
     case Count of
@@ -101,43 +101,3 @@ to_list(Arr) ->
                 lists:seq(0, Count - 1)
             )
     end.
-
-
--ifdef(TEST).
--include_lib("eunit/include/eunit.hrl").
-
-marray_test_() ->
-    [
-        {"new", fun() ->
-            Seq = lists:seq(?MIN, ?MAX),
-            {ok, Array} = marray:new(Seq),
-            ?assertEqual(
-                Seq,
-                lists:map(fun(Pos) -> {ok, Elem} = marray:get(Pos, Array), Elem end, Seq)
-            )
-        end},
-        {"size overflow", fun() ->
-            ?assertEqual({error, overflow}, marray:new(lists:seq(?MIN, ?MAX * 2)))
-        end},
-        {"bad elements (element is less than 0 or more than 65535)", fun() ->
-            ?assertEqual({error, {badarg, 0, ?MIN - 1}}, marray:new([?MIN - 1])),
-            ?assertEqual({error, {badarg, 0, ?MAX + 1}}, marray:new([?MAX + 1]))
-        end},
-        {"set at bad pos", fun() ->
-            {ok, Array} = marray:new([]),
-            ?assertEqual({error, {index_out_of_range, 1, 0}}, marray:set(1, 1, Array))
-        end},
-        {"get at bad pos", fun() ->
-            {ok, Array} = marray:new([]),
-            ?assertEqual({error, {index_out_of_range, 1, 0}}, marray:get(1, Array))
-        end},
-        {"to_list", fun() ->
-            {ok, Array} = marray:new([]),
-            ?assertEqual([], marray:to_list(Array)),
-            Seq = lists:seq(?MIN, ?MAX),
-            {ok, Array1} = marray:new(Seq),
-            ?assertEqual(Seq, marray:to_list(Array1))
-        end}
-    ].
-
--endif.

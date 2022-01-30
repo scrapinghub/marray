@@ -11,7 +11,7 @@ ERL_NIF_TERM atom_alloc_error;
 
 typedef struct marray{
     size_t size;
-    uint16_t *array;
+    unsigned int *array;
 } marray;
 
 
@@ -65,7 +65,7 @@ static ERL_NIF_TERM new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     enif_release_resource(resource);
     array = (marray *)resource;
     array->size = size;
-    array->array = enif_alloc(sizeof(uint16_t) * size);
+    array->array = enif_alloc(sizeof(unsigned int) * size);
     if (!array->array){
         ret = atom_alloc_error;
         goto error;
