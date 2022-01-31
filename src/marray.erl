@@ -101,3 +101,39 @@ to_list(Arr) ->
                 lists:seq(0, Count - 1)
             )
     end.
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+marray_test_() ->
+    [
+        {"new", fun() ->
+            Seq = lists:seq(?MIN, 1000),
+            {ok, Array} = marray:new(Seq),
+            ?assertEqual(
+                Seq,
+                lists:map(fun(Pos) -> {ok, Elem} = marray:get(Pos, Array), Elem end, Seq)
+            )
+        end},
+        {"bad elements (element is less than 0 or more than 65535)", fun() ->
+            ?assertEqual({error, {badarg, 0, ?MIN - 1}}, marray:new([?MIN - 1])),
+            ?assertEqual({error, {badarg, 0, ?MAX + 1}}, marray:new([?MAX + 1]))
+        end},
+        {"set at bad pos", fun() ->
+            {ok, Array} = marray:new([]),
+            ?assertEqual({error, {index_out_of_range, 1, 0}}, marray:set(1, 1, Array))
+        end},
+        {"get at bad pos", fun() ->
+            {ok, Array} = marray:new([]),
+            ?assertEqual({error, {index_out_of_range, 1, 0}}, marray:get(1, Array))
+        end},
+        {"to_list", fun() ->
+            {ok, Array} = marray:new([]),
+            ?assertEqual([], marray:to_list(Array)),
+            Seq = lists:seq(?MIN, 1000),
+            {ok, Array1} = marray:new(Seq),
+            ?assertEqual(Seq, marray:to_list(Array1))
+        end}
+    ].
+
+-endif.
