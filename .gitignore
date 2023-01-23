@@ -1,3 +1,4 @@
+.erlang.mk
 priv/
 c_src/env.mk
 *.swp

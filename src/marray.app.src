@@ -1,0 +1,8 @@
+{application, 'marray', [
+	{description, "mutable array"},
+	{vsn, "0.0.1"},
+	{modules, ['marray','marray_nif']},
+	{registered, []},
+	{applications, [kernel,stdlib]},
+	{env, []}
+]}.
