@@ -7,3 +7,4 @@ c_src/env.mk
 ebin
 *.beam
 marray.d
+_build/
